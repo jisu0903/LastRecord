@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#160e0e">
+<title>트란실바니아 비망록</title>
+<style>
+:root{color-scheme:dark;--gold:#e1c58d;--paper:#ead9b4}
+*{box-sizing:border-box} [hidden]{display:none!important}
+body{margin:0;min-height:100svh;background:radial-gradient(ellipse at center,#392725,#100b0a 78%);display:flex;align-items:center;justify-content:center;padding:12px;font-family:Georgia,'Noto Serif KR',serif;color:var(--paper)}
+.stage{width:min(100%, min(78svh * .6667, 520px));width:min(100%, 520px);display:flex;flex-direction:column;align-items:center;gap:12px}
+.book-frame{position:relative;width:100%;aspect-ratio:2/3;overflow:hidden;box-shadow:0 22px 55px #000b;border-radius:3px;background:#321a17}
+.book-image{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;display:block}
+/* 투명 클릭 영역: 표지 사진 속 금속 걸쇠 위치에 맞춤 */
+.lock-hotspot{position:absolute;left:69%;top:36.5%;width:27%;height:15%;border:0;background:transparent;padding:0;cursor:pointer;border-radius:18%;-webkit-tap-highlight-color:transparent}
+.lock-hotspot:focus-visible{outline:2px solid #f4d99b;outline-offset:2px;background:#fff1}
+.hint{font-size:12px;letter-spacing:.08em;color:#e6d3ac;text-align:center;text-shadow:0 2px 5px #000;opacity:.9}
+.modal{position:fixed;inset:0;z-index:10;background:#080504c9;display:flex;align-items:center;justify-content:center;padding:22px}
+.dialog{width:min(100%,350px);padding:28px 23px 23px;background:linear-gradient(145deg,#35221c,#17100e);border:1px solid #a88955;box-shadow:0 18px 55px #000b;text-align:center}
+.kicker{font-size:10px;letter-spacing:.25em;color:#c3a56f;margin:0 0 13px}.dialog h1{font-size:23px;font-weight:500;letter-spacing:.12em;margin:0 0 12px;color:#f0d9a7}.dialog p{font-size:13px;line-height:1.8;color:#d2c0a0;margin:0 0 18px}.initials{font-size:25px;letter-spacing:.5em;margin:6px 0 20px 8px;color:#f2dfb9}
+.answer{width:100%;background:#0e0b09;border:1px solid #806b4c;padding:13px 12px;color:#f5e5c4;font:16px inherit;text-align:center;border-radius:0;outline:none}.answer:focus{border-color:#e4c78a}.actions{display:flex;gap:9px;margin-top:16px}.actions button{flex:1;padding:11px 8px;font:inherit;font-size:13px;cursor:pointer}.submit{border:1px solid #c5a66b;background:#8d6a37;color:#fff0d0}.cancel{border:1px solid #695543;background:transparent;color:#d5c2a0}.error{min-height:22px;margin-top:12px;font-size:12px;color:#e5a19a}.reset{background:#1a100e;border:1px solid #8a7048;color:#ddc99f;padding:9px 18px;font:inherit;font-size:12px;cursor:pointer}
+@media(max-height:650px){body{padding:6px}.stage{width:min(100%, 42svh)}.hint{font-size:10px}}
+</style>
+</head>
+<body>
+<main class="stage">
+ <div class="book-frame" id="bookFrame" aria-label="트란실바니아 비망록">
+  <img class="book-image" id="bookImage" src="cover.jpg" alt="낡은 버건디색 책 표지, 트란실바니아 비망록">
+  <button class="lock-hotspot" id="lockButton" type="button" aria-label="책의 자물쇠를 눌러 입력창 열기" title="자물쇠"></button>
+ </div>
+ <div class="hint" id="hint">걸쇠를 눌러 비망록을 여시오</div>
+ <button class="reset" id="resetButton" hidden>처음 화면으로</button>
+</main>
+<div class="modal" id="quizModal" hidden>
+ <form class="dialog" id="quizForm">
+  <div class="kicker">TRANSYLVANIA MEMORANDUM</div>
+  <h1>봉인을 풀 이름</h1>
+  <p>비망록의 원래 주인을 입력하라.</p>
+  <div class="initials">ㅂㅎㅅ</div>
+  <input class="answer" id="answer" name="answer" autocomplete="off" autocapitalize="off" placeholder="이름 입력" aria-label="이름 입력" required>
+  <div class="error" id="error" aria-live="polite"></div>
+  <div class="actions"><button class="cancel" type="button" id="cancelButton">취소</button><button class="submit" type="submit">봉인 해제</button></div>
+ </form>
+</div>
+<script>
+const KEY='transylvaniaMemoirUnlocked_v1';
+const image=document.getElementById('bookImage');
+const lockButton=document.getElementById('lockButton');
+const modal=document.getElementById('quizModal');
+const answer=document.getElementById('answer');
+const error=document.getElementById('error');
+const hint=document.getElementById('hint');
+const resetButton=document.getElementById('resetButton');
+let unlocked=false;
+function showUnlocked(){unlocked=true;image.src='open.jpg';image.alt='펼쳐진 트란실바니아 비망록 안쪽, 오목한 보관 공간에 놓인 붉은 십자가';lockButton.hidden=true;modal.hidden=true;hint.textContent='봉인이 풀렸다. 십자가가 모습을 드러냈다.';resetButton.hidden=false;}
+function showLocked(){unlocked=false;image.src='cover.jpg';image.alt='낡은 버건디색 책 표지, 트란실바니아 비망록';lockButton.hidden=false;modal.hidden=true;hint.textContent='걸쇠를 눌러 비망록을 여시오';resetButton.hidden=true;localStorage.removeItem(KEY);}
+if(localStorage.getItem(KEY)==='yes')showUnlocked();
+lockButton.addEventListener('click',()=>{modal.hidden=false;error.textContent='';answer.value='';setTimeout(()=>answer.focus(),50)});
+document.getElementById('cancelButton').addEventListener('click',()=>{modal.hidden=true;error.textContent=''});
+modal.addEventListener('click',e=>{if(e.target===modal)modal.hidden=true});
+document.getElementById('quizForm').addEventListener('submit',e=>{e.preventDefault();if(answer.value.trim().replace(/\s/g,'')==='반헬싱'){localStorage.setItem(KEY,'yes');showUnlocked()}else{error.textContent='이름이 틀렸다. 다시 생각해 보라.';answer.select()}});
+resetButton.addEventListener('click',showLocked);
+</script>
+</body>
+</html>
